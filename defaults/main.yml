@@ -1,2 +1,17 @@
 ---
-# defaults file for ansible_role_dns
+want_dns: false
+dns_type:
+  - bind
+
+dns_bind_packages:
+  - bind9
+  - bind9utils
+dns_bind_services:
+  - named
+dns_bind_services_sysrcs: "{{ dns_bind_services }}"
+dns_bind_user: bind
+dns_bind_group: bind
+
+dns_bind_conf_dir: /etc/namedb
+
+root_group: root

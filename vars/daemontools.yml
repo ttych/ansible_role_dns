@@ -1,0 +1,24 @@
+---
+
+dns_bind_service_dir: "{{ services_dir }}/named"
+dns_bind_dir: "{{ dns_bind_service_dir }}"
+dns_bind_etc_dir: "{{ dns_bind_service_dir }}/etc"
+dns_bind_conf_dir: "{{ dns_bind_etc_dir }}"
+dns_bind_conf_file: "{{ dns_bind_etc_dir }}/named.conf"
+dns_bind_log_dir: "{{ dns_bind_service_dir }}/log"
+dns_bind_log_file: "{{ dns_bind_log_dir }}/named.log"
+dns_bind_run_dir: "{{ dns_bind_service_dir }}/run"
+dns_bind_pid_file: "{{ dns_bind_run_dir }}/named.pid"
+dns_bind_svscan_dir: "{{ dns_bind_service_dir }}/svscan"
+dns_bind_svscan_log_dir: "{{ dns_bind_svscan_dir }}/log"
+
+dns_bind_directories:
+  - { path: "{{ dns_bind_service_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_etc_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_log_dir }}", owner: "{{ dns_bind_user }}", group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_run_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_svscan_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_svscan_log_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
+  - { path: "{{ dns_bind_svscan_log_dir }}/main", owner: "{{ dns_bind_user }}", group: "{{ root_group }}", mode: "0755" }
+
+newsyslog_conf_dir: "{{ services_newsyslog_dir }}"

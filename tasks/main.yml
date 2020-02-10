@@ -1,2 +1,12 @@
 ---
-# tasks file for ansible_role_dns
+- block:
+    - include_tasks: context.yml
+
+    - include_tasks: setup_bind.yml
+      when: "'bind' in dns_type"
+
+  when: want_dns
+
+- name: "set has_dns to {{ want_dns }}"
+  set_fact:
+    has_dns: "{{ want_dns }}"

@@ -1,0 +1,69 @@
+---
+
+- name: install bind packages
+  include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}" sysrcs="{{ dns_bind_services_sysrcs }}"
+
+
+# FIXME: internal subnet / external subnet
+
+
+- name: setup daemontools for bind
+  block:
+    - name: set service directory tree
+      file:
+        path: "{{ item.path }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+        state: directory
+      loop: "{{ dns_bind_directories }}"
+
+    - template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: "{{ root_group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: svscan/run, dest: "{{ dns_bind_svscan_dir }}/run", mode: "0750" }
+        - { src: svscan/log/run, dest: "{{ dns_bind_svscan_log_dir }}/run", mode: "0750" }
+
+    # - name: link svscan
+    #   file:
+    #     src: "{{ dns_bind_svscan_dir }}"
+    #     dest: "{{ daemontools_svscan_dir }}/bind"
+    #     state: link
+
+  when: has_daemontools
+
+
+- include_tasks: bind_named_conf.yml
+
+
+- name: start standard service
+  block:
+    - name: enable standard FreeBSD service
+      include: sysrc.yml key="{{ item }}_enable" value="YES"
+      loop: "{{ dns_bind_services_sysrcs }}"
+      when: ansible_system == 'FreeBSD'
+
+    - name: enable standard Linux service
+      service:
+        name: "{{ item }}"
+        enabled: true
+      loop: "{{ dns_bind_services }}"
+      when: ansible_system == 'Linux'
+
+    - service:
+        name: "{{ item }}"
+        state: started
+      loop: "{{ dns_bind_services }}"
+      register: t_dns_bind_service
+
+    - service:
+        name: "{{ item }}"
+        state: restarted
+      loop: "{{ dns_bind_services }}"
+      when: t_dns_bind_conf.changed and not t_dns_bind_service.changed
+
+  when: has_daemontools is not defined or not has_daemontools

@@ -1,0 +1,38 @@
+---
+
+- name: create named db dirs
+  file:
+    path: "{{ dns_bind_conf_dir }}/{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  loop:
+    - { path: master, owner: root, group: "{{ root_group }}", mode:
+  "0755" }
+    - { path: slave, owner: "{{ dns_bind_user }}", group: "{{
+  dns_bind_group }}", mode: "0755" }
+    - { path: working, owner: "{{ dns_bind_user }}", group: "{{
+  dns_bind_group }}", mode: "0755" }
+    - { path: dynamic, owner: "{{ dns_bind_user }}", group: "{{
+  dns_bind_group }}", mode: "0755" }
+
+- name: deploy standard master db
+  copy:
+    src: "named/master/{{ item.name }}"
+    dest: "{{ dns_bind_conf_dir }}/master/{{ item.name }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { name: empty.db, owner: root, group: "{{ root_group }}", mode:
+  "0644" }
+    - { name: localhost-forward.db, owner: root, group: "{{ root_group }}", mode:
+  "0644" }
+    - { name: localhost-reverse.db, owner: root, group: "{{ root_group }}", mode:
+  "0644" }
+
+# bind.keys
+# named.conf
+# named.root
+# rndc.conf
