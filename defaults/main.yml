@@ -15,3 +15,9 @@ dns_bind_group: bind
 dns_bind_conf_dir: /etc/namedb
 
 root_group: root
+
+dns_bind_keys_name: bind.keys.v9_11
+dns_bind_keys_url: "https://downloads.isc.org/isc/bind9/keys/9.11/{{ dns_bind_keys_name }}"
+
+dns_bind_named_root_name: named.root
+dns_bind_named_root_url: "http://www.internic.net/domain/{{ dns_bind_named_root_name }}"
