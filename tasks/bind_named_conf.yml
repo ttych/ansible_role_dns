@@ -114,7 +114,7 @@
 - name: today as serial number
   set_fact:
     t_dns_today_serial: "{{ '%Y%m%d01' | strftime }}"
-  
+
 - name: check in/local db
   stat:
     path: "{{ dns_bind_conf_dir }}/master/in/local"
