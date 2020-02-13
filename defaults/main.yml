@@ -13,6 +13,12 @@ dns_bind_user: bind
 dns_bind_group: bind
 
 dns_bind_conf_dir: /etc/namedb
+dns_bind_pid_dir: /var/run/named
+dns_bind_pid_file: "{{ dns_bind_pid_dir }}/pid"
+dns_bind_dump_dir: /var/dump
+dns_bind_dump_file: "{{ dns_bind_dump_dir }}/named_dump.db"
+dns_bind_stats_dir: "/var/stats"
+dns_bind_stats_file: "{{ dns_bind_stats_dir }}/named.stats"
 
 root_group: root
 
