@@ -111,8 +111,13 @@
     mode: "0644"
   when: t_stat_named_conf.stat.exists == false
 
+- name: today as serial number
+  set_fact:
+    t_dns_today_serial: "{{ '%Y%m%d01' | strftime }}"
+  
 - name: check in/local db
-  stat: "{{ dns_bind_conf_dir }}/master/in/local"
+  stat:
+    path: "{{ dns_bind_conf_dir }}/master/in/local"
   register: t_stat_named_in_local_db
 
 - name: deploy in/local db
@@ -137,3 +142,13 @@
     group: "{{ dns_bind_group }}"
     mode: "0640"
   when: t_stat_named_in_0_168_192_db.stat.exists == false
+
+- name: check conf
+  command: named-checkconf "{{ dns_bind_conf_dir }}/named.conf"
+  changed_when: false
+  failed_when: false
+  register: t_named_checkconf
+
+- debug:
+    msg: "{{ t_named_checkconf }}"
+  when: t_named_checkconf.failed
