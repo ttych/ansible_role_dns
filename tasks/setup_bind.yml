@@ -28,11 +28,11 @@
         - { src: svscan/run, dest: "{{ dns_bind_svscan_dir }}/run", mode: "0750" }
         - { src: svscan/log/run, dest: "{{ dns_bind_svscan_log_dir }}/run", mode: "0750" }
 
-    # - name: link svscan
-    #   file:
-    #     src: "{{ dns_bind_svscan_dir }}"
-    #     dest: "{{ daemontools_svscan_dir }}/bind"
-    #     state: link
+    - name: link svscan
+      file:
+        src: "{{ dns_bind_svscan_dir }}"
+        dest: "{{ daemontools_svscan_dir }}/bind"
+        state: link
 
   when: has_daemontools
 

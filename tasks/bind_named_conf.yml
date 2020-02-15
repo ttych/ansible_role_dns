@@ -99,13 +99,13 @@
 
 - name: check named.conf status
   stat:
-    path: "{{ dns_bind_conf_dir }}/named.conf"
+    path: "{{ dns_bind_conf_file }}"
   register: t_stat_named_conf
 
 - name: deploy named.conf
   template:
     src: "named/named.conf"
-    dest: "{{ dns_bind_conf_dir }}/named.conf"
+    dest: "{{ dns_bind_conf_file }}"
     owner: root
     group: "{{ root_group }}"
     mode: "0644"
@@ -144,7 +144,7 @@
   when: t_stat_named_in_0_168_192_db.stat.exists == false
 
 - name: check conf
-  command: named-checkconf "{{ dns_bind_conf_dir }}/named.conf"
+  command: named-checkconf "{{ dns_bind_conf_file }}"
   changed_when: false
   failed_when: false
   register: t_named_checkconf

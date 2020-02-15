@@ -13,6 +13,7 @@ dns_bind_user: bind
 dns_bind_group: bind
 
 dns_bind_conf_dir: /etc/namedb
+dns_bind_conf_file: "{{ dns_bind_conf_dir }}/named.conf"
 dns_bind_pid_dir: /var/run/named
 dns_bind_pid_file: "{{ dns_bind_pid_dir }}/pid"
 dns_bind_dump_dir: /var/dump
@@ -21,6 +22,12 @@ dns_bind_stats_dir: "/var/stats"
 dns_bind_stats_file: "{{ dns_bind_stats_dir }}/named.stats"
 
 root_group: root
+
+services_user: service
+services_group: service
+
+services_logger_user: logger
+services_logger_group: logger
 
 dns_bind_keys_name: bind.keys.v9_11
 dns_bind_keys_url: "https://downloads.isc.org/isc/bind9/keys/9.11/{{ dns_bind_keys_name }}"
