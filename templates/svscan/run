@@ -4,4 +4,4 @@ NAMED_USER="{{ dns_bind_user }}"
 NAMED_CONF="{{ dns_bind_conf_file }}"
 
 exec 2>&1
-exec named -u "${NAMED_USER:-root}" -c "$NAMED_CONF" -f -g
+exec named -u "${NAMED_USER:-root}" -c "$NAMED_CONF" -f
