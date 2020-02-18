@@ -7,6 +7,36 @@
 # FIXME: internal subnet / external subnet
 
 
+- name: setup runit for bind
+  block:
+    - name: set service directory tree
+      file:
+        path: "{{ item.path }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+        state: directory
+      loop: "{{ dns_bind_runit_directories }}"
+
+    - template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: "{{ root_group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: runit/run, dest: "{{ dns_bind_runit_dir }}/run", mode: "0750" }
+        - { src: runit/log/run, dest: "{{ dns_bind_runit_log_dir }}/run", mode: "0750" }
+
+    - name: link runit
+      file:
+        src: "{{ dns_bind_runit_dir }}"
+        dest: "{{ runit_services_dir }}/named"
+        state: link
+
+  when: has_runit
+
+
 - name: setup daemontools for bind
   block:
     - name: set service directory tree
@@ -16,7 +46,7 @@
         group: "{{ item.group }}"
         mode: "{{ item.mode }}"
         state: directory
-      loop: "{{ dns_bind_directories }}"
+      loop: "{{ dns_bind_daemontools_directories }}"
 
     - template:
         src: "{{ item.src }}"
@@ -34,7 +64,7 @@
         dest: "{{ daemontools_svscan_dir }}/bind"
         state: link
 
-  when: has_daemontools
+  when: (has_daemontools|d(false)) and not (has_runit|d(false))
 
 
 - include_tasks: bind_named_conf.yml
@@ -66,4 +96,4 @@
       loop: "{{ dns_bind_services }}"
       when: t_dns_bind_conf.changed and not t_dns_bind_service.changed
 
-  when: has_daemontools is not defined or not has_daemontools
+  when: not (has_runit|d(false)) and not (has_daemontools|d(false))
