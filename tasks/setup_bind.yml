@@ -1,7 +1,7 @@
 ---
 
 - name: install bind packages
-  include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}" sysrcs="{{ dns_bind_services_sysrcs }}"
+  include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}"
 
 
 # FIXME: internal subnet / external subnet

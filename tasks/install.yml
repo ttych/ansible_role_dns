@@ -24,7 +24,7 @@
 
 - name: disable default service on FreeBSD
   include: sysrc.yml key="{{ item }}_enable" value="NO"
-  loop: "{{ sysrcs }}"
+  loop: "{{ services }}"
   when:
     - ansible_system == 'FreeBSD'
     - install|d() and install.changed

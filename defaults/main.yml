@@ -8,7 +8,6 @@ dns_bind_packages:
   - bind9utils
 dns_bind_services:
   - named
-dns_bind_services_sysrcs: "{{ dns_bind_services }}"
 dns_bind_user: bind
 dns_bind_group: bind
 
