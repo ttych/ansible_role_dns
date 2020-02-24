@@ -7,7 +7,7 @@
     - "{{ ansible_system }}.yml"
     - "{{ ansible_os_family }}.yml"
     - "{{ ansible_distribution }}.yml"
-    - "{{ ansible_distribution_release }}.yml"
+    - "{{ ansible_distribution + '_' + ansible_distribution_release }}.yml"
 
 - name: include services variables
   include_vars:
