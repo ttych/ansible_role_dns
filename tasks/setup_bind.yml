@@ -25,8 +25,8 @@
         group: "{{ root_group }}"
         mode: "{{ item.mode }}"
       loop:
-        - { src: runit/run, dest: "{{ dns_bind_runit_dir }}/run", mode: "0750" }
-        - { src: runit/log/run, dest: "{{ dns_bind_runit_log_dir }}/run", mode: "0750" }
+        - { src: runit/run, dest: "{{ dns_bind_runit_dir }}/run", mode: "0755" }
+        - { src: runit/log/run, dest: "{{ dns_bind_runit_log_dir }}/run", mode: "0755" }
 
     - name: link runit
       file:
