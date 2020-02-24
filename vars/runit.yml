@@ -2,10 +2,7 @@
 dns_bind_runit_dir: "{{ dns_bind_service_dir }}/runit"
 dns_bind_runit_log_dir: "{{ dns_bind_runit_dir }}/log"
 
-dns_bind_runit_base_directories:
+dns_bind_runit_directories:
   - { path: "{{ dns_bind_runit_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
   - { path: "{{ dns_bind_runit_log_dir }}", owner: root, group: "{{ root_group }}", mode: "0755" }
   - { path: "{{ dns_bind_runit_log_dir }}/main", owner: "{{ runit_logger_user }}", group: "{{ root_group }}", mode: "0755" }
-
-dns_bind_runit_directories: "{{ dns_bind_directories +
-dns_bind_runit_base_directories }}"

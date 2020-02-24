@@ -4,6 +4,16 @@
   include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}"
 
 
+- name: setup service directory tree
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  loop: "{{ dns_bind_directories }}"
+
+
 # FIXME: internal subnet / external subnet
 
 
