@@ -34,7 +34,7 @@
         dest: "{{ runit_services_dir }}/named"
         state: link
 
-  when: has_runit
+  when: (has_runit|d(false)) and not (has_daemontools|d(false))
 
 
 - name: setup daemontools for bind
