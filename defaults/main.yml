@@ -20,6 +20,21 @@ dns_bind_dump_file: "{{ dns_bind_dump_dir }}/named_dump.db"
 dns_bind_stats_dir: "/var/stats"
 dns_bind_stats_file: "{{ dns_bind_stats_dir }}/named.stats"
 
+dns_bind_users:
+  - name: bind
+    comment: Bind
+    group: bind
+    groups:
+    home: /
+    create_home: no
+    shell: /usr/sbin/nologin
+    uid: 53
+    password: '*'
+
+dns_bind_groups:
+  - { name: bind, gid: 53 }
+
+
 root_group: root
 
 services_user: service

@@ -1,5 +1,9 @@
 ---
 
+- name: create bind accounts
+  include: accounts.yml accounts_groups="{{ dns_bind_groups }}" accounts_users="{{ dns_bind_users }}"
+
+
 - name: install bind packages
   include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}"
 
