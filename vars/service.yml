@@ -1,6 +1,6 @@
 ---
 
-dns_bind_service_dir: "{{ services_dir }}/named"
+dns_bind_service_dir: "{{ service_dir }}/named"
 dns_bind_dir: "{{ dns_bind_service_dir }}"
 dns_bind_etc_dir: "{{ dns_bind_service_dir }}/etc"
 dns_bind_conf_dir: "{{ dns_bind_etc_dir }}"

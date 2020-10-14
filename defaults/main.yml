@@ -37,11 +37,11 @@ dns_bind_groups:
 
 root_group: root
 
-services_user: service
-services_group: service
+service_user: service
+service_group: service
 
-services_logger_user: logger
-services_logger_group: logger
+service_logger_user: logger
+service_logger_group: logger
 
 dns_bind_keys_name: bind.keys.v9_11
 dns_bind_keys_url: "https://downloads.isc.org/isc/bind9/keys/9.11/{{ dns_bind_keys_name }}"

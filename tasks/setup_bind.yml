@@ -7,7 +7,6 @@
 - name: install bind packages
   include: install.yml packages="{{ dns_bind_packages }}" services="{{ dns_bind_services }}"
 
-
 - name: setup service directory tree
   file:
     path: "{{ item.path }}"
@@ -45,7 +44,7 @@
     - name: link runit
       file:
         src: "{{ dns_bind_runit_dir }}"
-        dest: "{{ runit_services_dir }}/named"
+        dest: "{{ runit_service_dir }}/named"
         state: link
 
   when: (has_runit|d(false)) and not (has_daemontools|d(false))
