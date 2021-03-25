@@ -20,6 +20,42 @@
 # FIXME: internal subnet / external subnet
 
 
+- name: check if local apparmor is present
+  stat:
+    path: "{{ dns_bind_apparmor_local_profile }}"
+  register: t_bind_apparmor_local_stat
+
+# - name: update apparmor conf
+#   block:
+#     - name: check apparmor settings
+#       lineinfile:
+#         path: "{{ dns_bind_apparmor_local_profile }}"
+#         regexp: "{{ item.regexp }}"
+#         line: "{{ item.line }}"
+#         insertbefore: '^}$'
+#       loop:
+#         - regexp: '^\s*{{ dns_bind_conf_dir }}/\*\*\s+r,$'
+#           line: '  {{ dns_bind_conf_dir }}/** r,'
+
+#   when: t_bind_apparmor_local_stat.stat.exists
+
+- name: deploy local apparmor
+  template:
+    src: apparmor.d/local/usr.sbin.named
+    dest: "{{ dns_bind_apparmor_local_profile }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: "0644"
+  when: t_bind_apparmor_local_stat.stat.exists
+  register: t_bind_apparmor_local_conf
+
+- name: reload apparmor
+  service:
+    name: apparmor
+    state: restarted
+  when: t_bind_apparmor_local_conf.changed
+  
+
 - name: setup runit for bind
   block:
     - name: set service directory tree

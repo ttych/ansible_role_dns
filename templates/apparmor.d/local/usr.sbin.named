@@ -1,0 +1,4 @@
+{{ dns_bind_conf_dir }}/** r,
+{{ dns_bind_conf_file }} r,
+owner {{ dns_bind_log_dir }}/* rwk,
+owner {{ dns_bind_pid_file }} rw,

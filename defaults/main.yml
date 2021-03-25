@@ -19,6 +19,8 @@ dns_bind_dump_dir: /var/dump
 dns_bind_dump_file: "{{ dns_bind_dump_dir }}/named_dump.db"
 dns_bind_stats_dir: "/var/stats"
 dns_bind_stats_file: "{{ dns_bind_stats_dir }}/named.stats"
+dns_bind_apparmor_local_profile: /etc/apparmor.d/local/usr.sbin.named
+dns_bind_log_dir: /var/log/named
 
 dns_bind_users:
   - name: bind
