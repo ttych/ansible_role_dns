@@ -1,4 +1,7 @@
 {{ dns_bind_conf_dir }}/** r,
 {{ dns_bind_conf_file }} r,
+{{ dns_bind_pid_dir }}/* rw,
+{{ dns_bind_dump_dir }}/* rw,
+{{ dns_bind_conf_dir }}/working/* rw,
 owner {{ dns_bind_log_dir }}/* rwk,
 owner {{ dns_bind_pid_file }} rw,
