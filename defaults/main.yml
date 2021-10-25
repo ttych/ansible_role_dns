@@ -1,4 +1,5 @@
 ---
+
 want_dns: false
 dns_type:
   - bind
@@ -34,8 +35,8 @@ dns_bind_users:
     password: '*'
 
 dns_bind_groups:
-  - { name: bind, gid: 53 }
-
+  - name: bind
+    gid: 53
 
 root_group: root
 
