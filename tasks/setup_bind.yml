@@ -82,6 +82,7 @@
         src: "{{ dns_bind_runit_dir }}"
         dest: "{{ runit_service_dir }}/named"
         state: link
+      when: want_dns_service
 
   when: (has_runit|d(false)) and not (has_daemontools|d(false))
 
@@ -112,6 +113,7 @@
         src: "{{ dns_bind_svscan_dir }}"
         dest: "{{ daemontools_svscan_dir }}/bind"
         state: link
+      when: want_dns_service
 
   when: (has_daemontools|d(false)) and not (has_runit|d(false))
 
@@ -145,4 +147,7 @@
       loop: "{{ dns_bind_services }}"
       when: t_dns_bind_conf.changed and not t_dns_bind_service.changed
 
-  when: not (has_runit|d(false)) and not (has_daemontools|d(false))
+  when:
+    - not (has_runit|d(false))
+    - not (has_daemontools|d(false))
+    - want_dns_service

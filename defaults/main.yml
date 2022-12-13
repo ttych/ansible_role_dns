@@ -1,6 +1,8 @@
 ---
 
 want_dns: false
+want_dns_service: true
+
 dns_type:
   - bind
 
