@@ -1,0 +1,20 @@
+
+options {
+    directory       "{{ dns_bind_work_directory }}";
+    dump-file	    "{{ dns_bind_dump_file }}";
+    statistics-file	"{{ dns_bind_statistics_file }}";
+    pid-file	    "{{ dns_bind_pid_file }}";
+
+    version         "{{ dns_bind_conf_version }}";
+
+    listen-on { {{ dns_bind_conf_listen_on | map('regex_replace', '$', ';') | join(' ') }} };
+    listen-on-v6 { {{ dns_bind_conf_listen_on_v6 | map('regex_replace', '$', ';') | join(' ') }} };
+
+    dnssec-validation {{ dns_bind_conf_dnssec_validation }};
+
+{% if dns_bind_conf_use_forwarders %}
+    forward {{ dns_bind_conf_forward }};
+    forwarders { {{ dns_bind_conf_forwarders | map('regex_replace', '$', ';') | join(' ') }} };
+{% endif %}
+
+};

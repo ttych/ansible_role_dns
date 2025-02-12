@@ -1,0 +1,22 @@
+view "{{ view['label'] }}" {
+    match-clients { {{ view['match-clients'] | map('regex_replace', '$', ';') | join(' ') }} };
+    recursion {{ view['recursion'] | ternary('yes', 'no') }};
+
+{% if (view['zone_root_hint'] | default(true)) %}
+    zone "." {
+        type hint;
+        file "{{ dns_bind_named_root }}";
+    };
+{% endif %}
+
+{% for zone in (view.get('zones_rfc1912', True) and dns_bind_zones_rfc1912 or []) +
+               (view.get('zones_rfc1918', False) and dns_bind_zones_rfc1918 or []) +
+               view['zones']  %}
+    zone "{{ zone['name'] }}" {
+        type {{ zone['type'] }};
+        file "{{ zone['file'] | d( dns_bind_conf_dir + '/' + zone['type'] + '/' + 'db.' + view['label'] + '.' + zone['name'] ) }}";
+        allow-query { {{ zone.get('allow_query', ['any']) | map('regex_replace', '$', ';') | join(' ') }} };
+        allow-transfer { {{ zone.get('allow_transfer', ['none']) | map('regex_replace', '$', ';') | join(' ') }} };
+    };
+{% endfor %}
+};

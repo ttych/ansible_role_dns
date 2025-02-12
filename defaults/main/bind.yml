@@ -1,0 +1,229 @@
+---
+
+dns_use_bind: true
+
+
+dns_bind_user: bind
+dns_bind_group: "{{ dns_bind_user }}"
+dns_bind_home: "/home/{{ dns_bind_user }}"
+dns_bind_shell: /usr/sbin/nologin
+dns_bind_uid: 53
+dns_bind_gid: "{{ dns_bind_uid }}"
+
+dns_bind_users:
+  - name: "{{ dns_bind_user }}"
+    comment: "{{ dns_bind_user | capitalize }}"
+    group: "{{ dns_bind_group }}"
+    home: "{{ dns_bind_home }}"
+    create_home: no
+    shell: "{{ dns_bind_shell }}"
+    uid: "{{ dns_bind_uid }}"
+    password: '*'
+
+dns_bind_groups:
+  - name: "{{ dns_bind_group }}"
+    gid: "{{ dns_bind_gid }}"
+
+
+dns_bind_all_packages:
+  Linux:
+    - bind9
+  Ubuntu:
+    - bind9
+    - bind9-utils
+    - bind9-dnsutils
+  FreeBSD:
+    - bind916
+    - bind-tools
+
+dns_bind_packages: "{{ dns_bind_all_packages[ansible_distribution] | d(dns_bind_all_packages[ansible_system]) }}"
+
+
+dns_bind_all_conf_dir:
+  Linux: /etc/namedb
+  Ubuntu: /etc/bind
+  FreeBSD: /usr/local/etc/namedb
+
+dns_bind_conf_dir: "{{ dns_bind_all_conf_dir[ansible_distribution] | d(dns_bind_all_conf_dir[ansible_system]) }}"
+
+dns_bind_named_conf: "{{ dns_bind_conf_dir }}/named.conf"
+dns_bind_named_conf_options: "{{ dns_bind_named_conf }}.options"
+dns_bind_named_conf_logging: "{{ dns_bind_named_conf }}.logging"
+dns_bind_named_conf_rndc: "{{ dns_bind_named_conf }}.rndc"
+dns_bind_named_conf_local: "{{ dns_bind_named_conf }}.local"
+dns_bind_named_conf_default_zones: "{{ dns_bind_named_conf }}.default-zones"
+dns_bind_master_dir: "{{ dns_bind_conf_dir }}/master"
+dns_bind_slave_dir: "{{ dns_bind_conf_dir }}/slave"
+dns_bind_dynamic_dir: "{{ dns_bind_conf_dir }}/dynamic"
+dns_bind_log_dir: "/var/log/named"
+dns_bind_named_root: "{{ dns_bind_conf_dir }}/named.root"
+dns_bind_bind_keys: "{{ dns_bind_conf_dir }}/bind.keys"
+dns_bind_rndc_key: "{{ dns_bind_conf_dir }}/rndc.key"
+dns_bind_rndc_conf: "{{ dns_bind_conf_dir }}/rndc.conf"
+dns_bind_work_directory: "/var/cache/bind"
+dns_bind_run_dir: "/var/run/{{ dns_bind_service }}"
+dns_bind_pid_file: "{{ dns_bind_run_dir }}/named.pid"
+dns_bind_dump_file: "{{ dns_bind_work_directory }}/named_dump.db"
+dns_bind_statistics_file: "{{ dns_bind_work_directory }}/named.stats"
+
+dns_bind_rndc_conf_key_label: rndc-key
+dns_bind_rndc_conf_port: 953
+dns_bind_rndc_conf_controls:
+  - inet: 127.0.0.1
+    port: "{{ dns_bind_rndc_conf_port }}"
+    allow:
+      - 127.0.0.1
+      - ::1
+    keys:
+      - "{{ dns_bind_rndc_conf_key_label }}"
+
+dns_bind_conf_version: "1.2"
+dns_bind_conf_listen_on:
+  - any
+  # - 127.0.0.1
+  # - none
+dns_bind_conf_listen_on_v6:
+  - any
+  # - ::1
+dns_bind_conf_dnssec_validation: auto
+dns_bind_conf_use_forwarders: no
+dns_bind_conf_forward: only
+dns_bind_conf_forwarders:
+  - 8.8.8.8    # Google DNS
+  - 8.8.4.4    # Google DNS
+  - 1.1.1.1    # Cloudflare DNS
+
+
+dns_bind_zones_rfc1912:
+  - name: "localhost"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.localhost"
+  - name: "127.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.127"
+  - name: "0.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.0"
+  - name: "255.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.255"
+
+dns_bind_zones_rfc1918:
+  - name: "10.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "16.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "17.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "18.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "19.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "20.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "21.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "22.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "23.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "24.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "25.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "26.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "27.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "28.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "29.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "30.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "31.172.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+  - name: "168.192.in-addr.arpa"
+    type: master
+    file: "{{ dns_bind_conf_dir }}/db.empty"
+
+
+dns_bind_default_view_label: default
+dns_bind_default_view_zones: []
+dns_bind_default_view_match_clients:
+  - any
+
+dns_bind_view_default:
+  label: "{{ dns_bind_default_view_label }}"
+  recursion: no
+  match-clients: "{{ dns_bind_default_view_match_clients | select('truthy') | list }}"
+  zone_root_hint: yes
+  zones_rfc1912: yes
+  zones_rfc1918: yes
+  zones: "{{ dns_bind_default_view_zones }}"
+
+dns_bind_local_view_label: local
+dns_bind_local_zone_label: lan
+dns_bind_local_view_match_clients:
+  - localhost
+  - 127.0.0.1
+  - ::1
+  - "{{ ansible_default_ipv4['address'] }}"
+  - "{{ ansible_default_ipv4['network'] }}/{{ ansible_default_ipv4['prefix'] }}"
+  - "{{ ansible_default_ipv6['address'] | default('') }}"
+dns_bind_local_view_zones:
+  - name: "{{ dns_bind_local_zone_label }}"
+    type: master
+
+dns_bind_views:
+  - label: "{{ dns_bind_local_view_label }}"
+    recursion: yes
+    match-clients: "{{ dns_bind_local_view_match_clients | select('truthy') | list }}"
+    zone_root_hint: yes
+    zones_rfc1912: yes
+    zones_rfc1918: no
+    zones: "{{ dns_bind_local_view_zones }}"
+
+dns_bind_all_views: "{{ dns_bind_views + [ dns_bind_view_default ] }}"
+
+
+dns_bind_db_default_ttl: 86400   # 1 day
+# dns_bind_db_defaut_serial_number: "{{ ansible_date_time.date | regex_replace('-', '') + '01' }}"
+dns_bind_db_defaut_serial_number: 1
+dns_bind_db_default_refresh: 3600   # 1 hour
+dns_bind_db_default_retry: 1800   # 30 minutes
+dns_bind_db_default_expiry: 604800   # 7 days
+dns_bind_db_default_negative_cache_ttl: 3600   # 1 hour
+
+
+dns_bind_named_root_url: https://www.internic.net/domain/named.root
+dns_bind_bind_keys_url: https://downloads.isc.org/isc/bind9/keys/9.11/bind.keys.v9_11
+
+
+dns_bind_all_service:
+  Linux: named
+  Ubuntu: named
+  FreeBSD: named
+
+dns_bind_service: "{{ dns_bind_all_service[ansible_distribution] | d(dns_bind_all_service[ansible_system]) }}"
+dns_bind_service_type: "{{ dns_service_type }}"
+
+
+dns_bind_apparmor_local_profile: "/etc/apparmor.d/local/usr.sbin.named"

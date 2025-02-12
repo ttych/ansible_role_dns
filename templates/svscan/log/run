@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec setuidgid {{ service_logger_user }} multilog t ./main

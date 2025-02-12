@@ -1,8 +1,5 @@
 ---
-dns_bind_packages:
-  - bind916
-  - bind-tools
-
-dns_bind_conf_dir: /usr/local/etc/namedb
 
 root_group: wheel
+
+dns_bind_conf_dir: /usr/local/etc/namedb

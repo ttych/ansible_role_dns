@@ -1,9 +1,0 @@
-#!/bin/sh
-
-export PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
-
-NAMED_USER="{{ dns_bind_user }}"
-NAMED_CONF="{{ dns_bind_conf_file }}"
-
-exec 2>&1
-exec named -u "${NAMED_USER:-root}" -c "$NAMED_CONF" -f

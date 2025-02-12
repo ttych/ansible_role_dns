@@ -1,0 +1,8 @@
+
+include "{{ dns_bind_rndc_key }}";
+
+controls {
+{% for control in dns_bind_rndc_conf_controls %}
+    inet {{ control['inet'] }} port {{ control['port'] }} allow { {{ control['allow'] | map('regex_replace', '$', ';') | join(' ') }} } keys { {{ control['keys'] | map('regex_replace', '^', '"') | map('regex_replace', '$', '";') | join(' ') }} };
+{% endfor %}
+};

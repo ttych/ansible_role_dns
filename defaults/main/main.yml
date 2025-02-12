@@ -1,0 +1,18 @@
+---
+
+want_dns: false
+want_dns_service: true
+
+dns_dir: /app/dns   # to configure
+dns_common_directories:
+  - path: "{{ dns_dir }}"
+    owner: "{{ dns_admin_user }}"
+    group: "{{ dns_admin_group }}"
+    mode: "0751"
+
+
+dns_admin_user: root
+dns_admin_group: "{{ root_group }}"
+
+
+dns_service_type: "{{ ansible_service_mgr }}"

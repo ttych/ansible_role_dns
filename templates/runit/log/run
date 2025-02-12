@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec chpst -u{{ service_logger_user }} svlogd -tt ./main

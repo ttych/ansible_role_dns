@@ -1,0 +1,215 @@
+---
+
+- include_tasks: accounts.yml
+  vars:
+    accounts_groups: "{{ dns_bind_groups }}"
+    accounts_users: "{{ dns_bind_users }}"
+
+
+- name: install bind
+  package:
+    name: "{{ dns_bind_packages }}"
+    state: present
+  register: t_dns_bind_install
+
+
+- name: bind dirs
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(dns_bind_group) }}"
+    mode: "{{ item.mode | d('2755') }}"
+    state: directory
+  loop:
+    - path: "{{ dns_bind_conf_dir }}"
+    - path: "{{ dns_bind_master_dir }}"
+    - path: "{{ dns_bind_slave_dir }}"
+    - path: "{{ dns_bind_dynamic_dir }}"
+    - path: "{{ dns_bind_log_dir }}"
+      mode: "2770"
+    - path: "{{ dns_bind_work_directory }}"
+      mode: "2775"
+
+
+- name: deploy default db
+  template:
+    src: "bind/db/{{ item.name }}"
+    dest: "{{ dns_bind_conf_dir }}/{{ item.name }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(root_group) }}"
+    mode: "{{ item.mode | d('0644') }}"
+  loop:
+    - name: db.empty
+    - name: db.localhost
+    - name: db.0
+    - name: db.255
+    - name: db.127
+  register: t_dns_bind_default_db
+
+
+- name: deploy named.root from internet
+  get_url:
+    url: "{{ dns_bind_named_root_url }}"
+    dest: "{{ dns_bind_named_root }}"
+    mode: '0644'
+    owner: root
+    group: "{{ root_group }}"
+  failed_when: false
+  register: t_dns_bind_named_root_internet
+
+- name: deploy named.root from backup
+  template:
+    src: "bind/db/named.root"
+    dest: "{{ dns_bind_named_root }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: "0644"
+  when: t_dns_bind_named_root_internet.failed or ((t_dns_bind_named_root_internet.status_code|d(200)) != 200)
+  register: t_dns_bind_named_root_copy
+
+- name: deploy bind.keys from internet
+  get_url:
+    url: "{{ dns_bind_bind_keys_url }}"
+    dest: "{{ dns_bind_bind_keys }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: '0644'
+  failed_when: false
+  register: t_dns_bind_keys_internet
+
+- name: deploy bind.keys from backup
+  template:
+    src: "bind/db/bind.keys"
+    dest: "{{ dns_bind_bind_keys }}"
+    owner: root
+    group: "{{ root_group }}"
+    mode: "0644"
+  when: t_dns_bind_keys_internet.failed or ((t_dns_bind_keys_internet.status_code|d(200)) != 200)
+  register: t_dns_bind_keys_copy
+
+
+- name: check rndc.key status
+  stat:
+    path: "{{ dns_bind_rndc_key }}"
+  register: t_dns_bind_rndc_key
+
+- name: deploy rndc.key
+  command: rndc-confgen -a -A hmac-sha512 -c "{{ dns_bind_rndc_key }}" -k "{{ dns_bind_rndc_conf_key_label }}"
+  when: not t_dns_bind_rndc_key.stat.exists
+
+- name: fix rndc.key permission
+  file:
+    path: "{{ dns_bind_rndc_key }}"
+    owner: root
+    group: "{{ dns_bind_group }}"
+    mode: "0640"
+
+- name: get rndc.key content
+  command: cat "{{ dns_bind_rndc_key }}"
+  changed_when: false
+  register: t_dns_bind_rndc_key_content
+
+- name: deploy rndc.conf
+  template:
+    src: "bind/conf/rndc.conf"
+    dest: "{{ dns_bind_rndc_conf }}"
+    owner: root
+    group: "{{ dns_bind_group }}"
+    mode: "0640"
+
+
+- name: deploy bind configuration
+  template:
+    src: "bind/conf/{{ item.name }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(dns_bind_group) }}"
+    mode: "{{ item.mode | d('0640') }}"
+  loop:
+    - name: named.conf
+      dest: "{{ dns_bind_named_conf }}"
+    - name: named.conf.options
+      dest: "{{ dns_bind_named_conf_options }}"
+    - name: named.conf.logging
+      dest: "{{ dns_bind_named_conf_logging }}"
+    - name: named.conf.rndc
+      dest: "{{ dns_bind_named_conf_rndc }}"
+      mode: '0640'
+  register: t_dns_bind_confs
+
+- name: deploy bind view
+  template:
+    src: "bind/conf/named.conf.view"
+    dest: "{{ dns_bind_named_conf }}.view.{{ view['label'] }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(dns_bind_group) }}"
+    mode: "{{ item.mode | d('0640') }}"
+  loop: "{{ dns_bind_all_views }}"
+  loop_control:
+    loop_var: view
+  register: t_dns_bind_views
+
+- include_tasks: bind_view_zone.yml
+  loop: "{{ dns_bind_default_view_zones }}"
+  loop_control:
+    loop_var: item
+  vars:
+    zone: "{{ item }}"
+    view_label: "{{ dns_bind_default_view_label }}"
+  register: t_dns_bind_view_zones_default
+
+- include_tasks: bind_view_zone.yml
+  loop: "{{ dns_bind_local_view_zones }}"
+  loop_control:
+    loop_var: item
+  vars:
+    zone: "{{ item }}"
+    view_label: "{{ dns_bind_local_view_label }}"
+  register: t_dns_bind_view_zones_local
+
+
+- name: check named.conf
+  command: named-checkconf "{{ dns_bind_named_conf }}"
+  changed_when: false
+  failed_when: false
+  register: t_dns_bind_checkconf
+
+- fail:
+    msg: "{{ t_dns_bind_checkconf }}"
+  when: t_dns_bind_checkconf.failed
+
+
+- block:
+
+    - name: "deploy {{ dns_bind_service }} service"
+      template:
+        src: "bind/systemd/named.service"
+        dest: "{{ systemd_system_lib_dir }}/{{ dns_bind_service }}.service"
+        owner: root
+        group: root
+        mode: "0644"
+      register: t_dns_bind_service_deploy
+
+    - name: "enable {{ dns_bind_service }} service"
+      service:
+        name: "{{ dns_bind_service }}"
+        daemon_reload: yes
+        masked: no
+        enabled: yes
+
+    - name: "start {{ dns_bind_service }} service"
+      service:
+        name: "{{ dns_bind_service }}"
+        state: started
+      register: t_dns_bind_service_start
+
+    - name: "restart {{ dns_bind_service }} service on change"
+      service:
+        name: "{{ dns_bind_service }}"
+        state: restarted
+      when:
+        - not t_dns_bind_service_start.changed
+        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed
+      register: t_dns_bind_service_restart
+
+  when: dns_bind_service_type == 'systemd'

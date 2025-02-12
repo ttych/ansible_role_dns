@@ -3,11 +3,16 @@
 - block:
     - include_tasks: context.yml
 
-    - include_tasks: setup_bind.yml
-      when: "'bind' in dns_type"
+    - include_tasks: bind.yml
+      when: dns_use_bind
 
   when: want_dns
+
 
 - name: "set has_dns to {{ want_dns }}"
   set_fact:
     has_dns: "{{ want_dns }}"
+
+- name: "set has_bind to {{ dns_use_bind }}"
+  set_fact:
+    has_bind: "{{ dns_use_bind }}"

@@ -1,0 +1,15 @@
+$TTL {{ dns_bind_db_default_ttl }}
+
+@   IN  SOA  ns1.{{ t_dns_bind_view_zone_qualified }} admin.{{ t_dns_bind_view_zone_qualified }} (
+        {{ dns_bind_db_defaut_serial_number }}
+        {{ dns_bind_db_default_refresh }}
+        {{ dns_bind_db_default_retry }}
+        {{ dns_bind_db_default_expiry }}
+        {{ dns_bind_db_default_negative_cache_ttl }}
+)
+
+; Name Server (NS) Record
+@   IN  NS  ns1.{{ t_dns_bind_view_zone_qualified }}
+
+; A Record (IPv4)
+ns1 IN  A   {{ ansible_default_ipv4['address'] }}
