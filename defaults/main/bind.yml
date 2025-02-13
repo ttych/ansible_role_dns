@@ -50,11 +50,12 @@ dns_bind_named_conf: "{{ dns_bind_conf_dir }}/named.conf"
 dns_bind_named_conf_options: "{{ dns_bind_named_conf }}.options"
 dns_bind_named_conf_logging: "{{ dns_bind_named_conf }}.logging"
 dns_bind_named_conf_rndc: "{{ dns_bind_named_conf }}.rndc"
+dns_bind_named_conf_keys: "{{ dns_bind_named_conf }}.keys"
+dns_bind_keys_dir: "{{ dns_bind_conf_dir }}/keys"
 dns_bind_named_conf_local: "{{ dns_bind_named_conf }}.local"
-dns_bind_named_conf_default_zones: "{{ dns_bind_named_conf }}.default-zones"
 dns_bind_master_dir: "{{ dns_bind_conf_dir }}/master"
 dns_bind_slave_dir: "{{ dns_bind_conf_dir }}/slave"
-dns_bind_dynamic_dir: "{{ dns_bind_conf_dir }}/dynamic"
+dns_bind_scripts_dir: "{{ dns_bind_conf_dir }}/scripts"
 dns_bind_log_dir: "/var/log/named"
 dns_bind_named_root: "{{ dns_bind_conf_dir }}/named.root"
 dns_bind_bind_keys: "{{ dns_bind_conf_dir }}/bind.keys"
@@ -92,6 +93,11 @@ dns_bind_conf_forwarders:
   - 8.8.8.8    # Google DNS
   - 8.8.4.4    # Google DNS
   - 1.1.1.1    # Cloudflare DNS
+
+dns_bind_key_algorithm: hmac-sha256
+
+dns_bind_keys:
+  - label: "{{ dns_bind_local_key }}"
 
 
 dns_bind_zones_rfc1912:
@@ -179,8 +185,10 @@ dns_bind_view_default:
   zones_rfc1918: yes
   zones: "{{ dns_bind_default_view_zones }}"
 
+
 dns_bind_local_view_label: local
 dns_bind_local_zone_label: lan
+dns_bind_local_key: update-key
 dns_bind_local_view_match_clients:
   - localhost
   - 127.0.0.1
@@ -191,6 +199,8 @@ dns_bind_local_view_match_clients:
 dns_bind_local_view_zones:
   - name: "{{ dns_bind_local_zone_label }}"
     type: master
+    allow_update_keys:
+      - "{{ dns_bind_local_key }}"
 
 dns_bind_views:
   - label: "{{ dns_bind_local_view_label }}"
@@ -224,6 +234,3 @@ dns_bind_all_service:
 
 dns_bind_service: "{{ dns_bind_all_service[ansible_distribution] | d(dns_bind_all_service[ansible_system]) }}"
 dns_bind_service_type: "{{ dns_service_type }}"
-
-
-dns_bind_apparmor_local_profile: "/etc/apparmor.d/local/usr.sbin.named"

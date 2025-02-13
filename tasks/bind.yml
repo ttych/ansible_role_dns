@@ -23,12 +23,18 @@
   loop:
     - path: "{{ dns_bind_conf_dir }}"
     - path: "{{ dns_bind_master_dir }}"
+      mode: "2775"
     - path: "{{ dns_bind_slave_dir }}"
-    - path: "{{ dns_bind_dynamic_dir }}"
+      mode: "2775"
+    - path: "{{ dns_bind_keys_dir }}"
+      mode: "0750"
+    - path: "{{ dns_bind_scripts_dir }}"
+      mode: "0755"
     - path: "{{ dns_bind_log_dir }}"
       mode: "2770"
     - path: "{{ dns_bind_work_directory }}"
       mode: "2775"
+
 
 
 - name: deploy default db
@@ -118,6 +124,19 @@
     mode: "0640"
 
 
+- name: stat keys
+  stat:
+    path: "{{ dns_bind_keys_dir }}/{{ item.label }}"
+  loop: "{{ dns_bind_keys }}"
+  register: t_dns_bind_keys_stats
+
+- name: create keys
+  shell:
+    cmd: "tsig-keygen -a {{ item.item.algorithm | default(dns_bind_key_algorithm) }} \"{{ item.item.label }}\" > \"{{ dns_bind_keys_dir }}/{{ item.item.label }}\""
+  loop: "{{ t_dns_bind_keys_stats.results }}"
+  when: not item.stat.exists
+  register: t_dns_bind_keys
+
 - name: deploy bind configuration
   template:
     src: "bind/conf/{{ item.name }}"
@@ -135,7 +154,27 @@
     - name: named.conf.rndc
       dest: "{{ dns_bind_named_conf_rndc }}"
       mode: '0640'
+    - name: named.conf.keys
+      dest: "{{ dns_bind_named_conf_keys }}"
+      mode: '0640'
   register: t_dns_bind_confs
+
+
+- name: stat named.conf.local
+  stat:
+    path: "{{ dns_bind_named_conf_local }}"
+  register: t_dns_bind_named_conf_local
+
+- name: deploy named.conf.local
+  template:
+    src: "bind/conf/named.conf.local"
+    dest: "{{ dns_bind_named_conf_local }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(dns_bind_group) }}"
+    mode: "{{ item.mode | d('0640') }}"
+  when: not t_dns_bind_named_conf_local.stat.exists
+  register: t_dns_bind_conf_local
+
 
 - name: deploy bind view
   template:
@@ -179,6 +218,11 @@
   when: t_dns_bind_checkconf.failed
 
 
+- include_tasks: apparmor.yml
+  vars:
+    _apparmor_profile_name: usr.sbin.named
+    _apparmor_local_profile: bind/apparmor/usr.sbin.named
+
 - block:
 
     - name: "deploy {{ dns_bind_service }} service"
@@ -186,7 +230,7 @@
         src: "bind/systemd/named.service"
         dest: "{{ systemd_system_lib_dir }}/{{ dns_bind_service }}.service"
         owner: root
-        group: root
+        group: "{{ root_group }}"
         mode: "0644"
       register: t_dns_bind_service_deploy
 
@@ -209,7 +253,19 @@
         state: restarted
       when:
         - not t_dns_bind_service_start.changed
-        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed
+        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_dns_bind_keys.changed or t_apparmor_update
       register: t_dns_bind_service_restart
 
   when: dns_bind_service_type == 'systemd'
+
+
+- name: deploy scripts
+  template:
+    src: "bind/scripts/{{ item.name }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | d('root') }}"
+    group: "{{ item.group | d(dns_bind_group) }}"
+    mode: "{{ item.mode | d('0755') }}"
+  loop:
+    - name: nsupdate.example.sh
+      dest: "{{ dns_bind_scripts_dir }}/nsupdate.example.sh"

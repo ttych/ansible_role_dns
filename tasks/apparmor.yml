@@ -1,0 +1,57 @@
+---
+
+- block:
+
+    - ansible.builtin.fail:
+        msg: "apparmor profile name is not set !"
+      when: _apparmor_profile_name is not defined
+
+
+    - block:
+
+        - name: check base apparmor profile includes local
+          ansible.builtin.lineinfile:
+            path: "{{ apparmor_d }}/{{ _apparmor_profile_name }}"
+            state: present
+            regexp: '^\s*#include <local/usr.sbin.named>\s*$'
+            line: '  #include <local/usr.sbin.named>'
+            insertbefore: '^\s*}\s*$'
+          register: t_apparmor_profile_include
+
+        - name: ensure apparmor local profile
+          ansible.builtin.template:
+            src: "{{ _apparmor_local_profile }}"
+            dest: "{{ apparmor_d_local }}/{{ _apparmor_profile_name }}"
+            owner: root
+            group: "{{ root_group }}"
+            mode: "0644"
+          register: t_apparmor_local_profile
+
+      when: _apparmor_local_profile is defined
+
+
+    - block:
+
+        # reload only profile
+        # "apparmor_parser -r {{ apparmor_d }}/{{ _apparmor_profile_name }}"
+
+        - name: reload apparmor
+          service:
+            name: apparmor
+            daemon_reload: yes
+            enabled: yes
+            state: restarted
+          register: t_apparmor_service
+
+      when: t_apparmor_profile_include.changed or t_apparmor_local_profile.changed
+
+
+  when:
+    - ansible_apparmore | default(false)
+    - ansible_apparmore.status == 'enabled'
+
+
+
+- name: has apparmor update
+  set_fact:
+    t_apparmor_update: "{{ t_apparmor_service.changed or t_apparmor_profile_include.changed or t_apparmor_local_profile.changed }}"

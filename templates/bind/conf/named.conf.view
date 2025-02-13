@@ -17,6 +17,9 @@ view "{{ view['label'] }}" {
         file "{{ zone['file'] | d( dns_bind_conf_dir + '/' + zone['type'] + '/' + 'db.' + view['label'] + '.' + zone['name'] ) }}";
         allow-query { {{ zone.get('allow_query', ['any']) | map('regex_replace', '$', ';') | join(' ') }} };
         allow-transfer { {{ zone.get('allow_transfer', ['none']) | map('regex_replace', '$', ';') | join(' ') }} };
+{% if (zone['allow_update_keys'] | default([])) %}
+        allow-update { {{ zone['allow_update_keys'] | map('regex_replace', '^', 'key "') | map('regex_replace', '$', '";') | join(' ') }} };
+{% endif %}
     };
 {% endfor %}
 };

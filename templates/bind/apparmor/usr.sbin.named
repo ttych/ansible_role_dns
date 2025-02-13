@@ -1,0 +1,2 @@
+{{ dns_bind_master_dir }}/** rwk,
+{{ dns_bind_slave_dir }}/** rwk,
