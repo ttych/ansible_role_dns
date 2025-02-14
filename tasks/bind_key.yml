@@ -18,9 +18,9 @@
         owner: "{{ bind_key_owner | d('root') }}"
         group: "{{ bind_key_group | d(root_group) }}"
         mode: "{{ bind_key_mode | d('0640') }}"
-      register: t_dns_bind_key
+      register: t_dns_bind_key_deploy
 
-  when: bind_key.content is defined and bind_key.content
+  when: bind_key.secret is defined and bind_key.secret
 
 
 - block:
@@ -34,7 +34,7 @@
       shell:
         cmd: "tsig-keygen -a {{ bind_key.algorithm | default(dns_bind_key_algorithm) }} \"{{ bind_key.name }}\" > \"{{ bind_key_dir }}/{{ bind_key.name }}\""
       when: not t_dns_bind_key_stat.stat.exists
-      register: t_dns_bind_key
+      register: t_dns_bind_key_create
 
     - name: key permission
       file:
@@ -43,4 +43,9 @@
         group: "{{ bind_key_group | d(root_group) }}"
         mode: "{{ bind_key_mode | d('0640') }}"
 
-  when: bind_key.content is not defined or not bind_key.content
+  when: bind_key.secret is not defined or not bind_key.secret
+
+
+- name: bind_key update
+  set_fact:
+    t_bind_key_update: "{{ t_dns_bind_key_deploy.changed or t_dns_bind_key_create.changed }}"

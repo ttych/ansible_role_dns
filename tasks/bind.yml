@@ -130,7 +130,6 @@
     bind_key_dir: "{{ dns_bind_keys_dir }}"
     bind_key_group: "{{ dns_bind_group }}"
   loop: "{{ dns_bind_keys }}"
-  register: t_dns_bind_keys
 
 
 - name: deploy bind configuration
@@ -251,7 +250,7 @@
         state: restarted
       when:
         - not t_dns_bind_service_start.changed
-        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_dns_bind_keys.changed or t_dns_bind_apparmor.changed
+        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_bind_key_update or t_apparmor_update
       register: t_dns_bind_service_restart
 
   when: dns_bind_service_type == 'systemd'
