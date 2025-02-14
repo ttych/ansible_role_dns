@@ -47,8 +47,8 @@
 
 
   when:
-    - ansible_apparmore | default(false)
-    - ansible_apparmore.status == 'enabled'
+    - ansible_apparmor | default(false)
+    - ansible_apparmor.status == 'enabled'
 
 
 
