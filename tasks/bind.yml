@@ -124,18 +124,14 @@
     mode: "0640"
 
 
-- name: stat keys
-  stat:
-    path: "{{ dns_bind_keys_dir }}/{{ item.label }}"
+- include_tasks: bind_key.yml
+  vars:
+    bind_key: "{{ item }}"
+    bind_key_dir: "{{ dns_bind_keys_dir }}"
+    bind_key_group: "{{ dns_bind_group }}"
   loop: "{{ dns_bind_keys }}"
-  register: t_dns_bind_keys_stats
-
-- name: create keys
-  shell:
-    cmd: "tsig-keygen -a {{ item.item.algorithm | default(dns_bind_key_algorithm) }} \"{{ item.item.label }}\" > \"{{ dns_bind_keys_dir }}/{{ item.item.label }}\""
-  loop: "{{ t_dns_bind_keys_stats.results }}"
-  when: not item.stat.exists
   register: t_dns_bind_keys
+
 
 - name: deploy bind configuration
   template:
@@ -222,6 +218,8 @@
   vars:
     _apparmor_profile_name: usr.sbin.named
     _apparmor_local_profile: bind/apparmor/usr.sbin.named
+  register: t_dns_bind_apparmor
+
 
 - block:
 
@@ -253,7 +251,7 @@
         state: restarted
       when:
         - not t_dns_bind_service_start.changed
-        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_dns_bind_keys.changed or t_apparmor_update
+        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_dns_bind_keys.changed or t_dns_bind_apparmor.changed
       register: t_dns_bind_service_restart
 
   when: dns_bind_service_type == 'systemd'

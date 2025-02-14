@@ -1,0 +1,46 @@
+---
+
+- fail:
+    msg: "bind_key is not set !"
+  when: bind_key is not defined or not bind_key
+
+- fail:
+    msg: "bind_key_dir is not set !"
+  when: bind_key_dir is not defined or not bind_key_dir
+
+
+- block:
+
+    - name: deploy key
+      template:
+        src: "bind/key.template"
+        dest: "{{ bind_key_dir }}/{{ bind_key.name }}"
+        owner: "{{ bind_key_owner | d('root') }}"
+        group: "{{ bind_key_group | d(root_group) }}"
+        mode: "{{ bind_key_mode | d('0640') }}"
+      register: t_dns_bind_key
+
+  when: bind_key.content is defined and bind_key.content
+
+
+- block:
+
+    - name: stat keys
+      stat:
+        path: "{{ bind_key_dir }}/{{ bind_key.name }}"
+      register: t_dns_bind_key_stat
+
+    - name: create key
+      shell:
+        cmd: "tsig-keygen -a {{ bind_key.algorithm | default(dns_bind_key_algorithm) }} \"{{ bind_key.name }}\" > \"{{ bind_key_dir }}/{{ bind_key.name }}\""
+      when: not t_dns_bind_key_stat.stat.exists
+      register: t_dns_bind_key
+
+    - name: key permission
+      file:
+        path: "{{ bind_key_dir }}/{{ bind_key.name }}"
+        owner: "{{ bind_key_owner | d('root') }}"
+        group: "{{ bind_key_group | d(root_group) }}"
+        mode: "{{ bind_key_mode | d('0640') }}"
+
+  when: bind_key.content is not defined or not bind_key.content

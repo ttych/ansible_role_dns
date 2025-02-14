@@ -97,7 +97,7 @@ dns_bind_conf_forwarders:
 dns_bind_key_algorithm: hmac-sha256
 
 dns_bind_keys:
-  - label: "{{ dns_bind_local_key }}"
+  - "{{ dns_bind_local_key }}"
 
 
 dns_bind_zones_rfc1912:
@@ -188,7 +188,11 @@ dns_bind_view_default:
 
 dns_bind_local_view_label: local
 dns_bind_local_zone_label: lan
-dns_bind_local_key: update-key
+dns_bind_local_key:
+  name: ddns_update
+  algorithm: "{{ dns_bind_key_algorithm }}"
+
+
 dns_bind_local_view_match_clients:
   - localhost
   - 127.0.0.1
@@ -200,7 +204,7 @@ dns_bind_local_view_zones:
   - name: "{{ dns_bind_local_zone_label }}"
     type: master
     allow_update_keys:
-      - "{{ dns_bind_local_key }}"
+      - "{{ dns_bind_local_key.name }}"
 
 dns_bind_views:
   - label: "{{ dns_bind_local_view_label }}"

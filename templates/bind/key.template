@@ -1,0 +1,4 @@
+key "{{ bind_key.name }}" {
+        algorithm {{ bind_key.algorithm }};
+        secret "{{ bind_key.secret }}";
+};

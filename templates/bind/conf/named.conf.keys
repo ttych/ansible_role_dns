@@ -1,3 +1,3 @@
 {% for key in dns_bind_keys %}
-include "{{ dns_bind_keys_dir }}/{{ key['label'] }}";
+include "{{ dns_bind_keys_dir }}/{{ key.name }}";
 {% endfor %}

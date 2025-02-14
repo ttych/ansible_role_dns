@@ -1,6 +1,6 @@
 #!/bin/sh
 
-nsupdate -k "{{ dns_bind_keys_dir }}/{{ dns_bind_local_key }}" << EOF
+nsupdate -k "{{ dns_bind_keys_dir }}/{{ dns_bind_local_key.name }}" << EOF
 server localhost
 zone {{ dns_bind_local_zone_label }}
 update delete test.{{ dns_bind_local_zone_label }} A
