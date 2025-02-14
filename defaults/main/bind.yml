@@ -176,7 +176,7 @@ dns_bind_default_view_zones: []
 dns_bind_default_view_match_clients:
   - any
 
-dns_bind_view_default:
+dns_bind_default_view:
   label: "{{ dns_bind_default_view_label }}"
   recursion: no
   match-clients: "{{ dns_bind_default_view_match_clients | select('truthy') | list }}"
@@ -185,26 +185,38 @@ dns_bind_view_default:
   zones_rfc1918: yes
   zones: "{{ dns_bind_default_view_zones }}"
 
+dns_bind_localhost_match_clients:
+  - localhost
+  - 127.0.0.1
+  - ::1
+
+dns_bind_local_host4: "{{ ansible_default_ipv4['address'] | default('') }}"
+dns_bind_local_net4: "{{ ansible_default_ipv4['network'] }}/{{ ansible_default_ipv4['prefix'] }}"
+dns_bind_local_host6: "{{ ansible_default_ipv6['address'] | default('') }}"
+dns_bind_local_net6: null
+
+dns_bind_localnet_match_clients:
+  - "{{ dns_bind_local_host4 }}"
+  - "{{ dns_bind_local_net4 }}"
+  - "{{ dns_bind_local_host6 }}"
+  - "{{ dns_bind_local_net6 }}"
 
 dns_bind_local_view_label: local
 dns_bind_local_zone_label: lan
 dns_bind_local_key:
   name: ddns_update
   algorithm: "{{ dns_bind_key_algorithm }}"
+dns_bind_local_view_match_clients: "{{ dns_bind_localhost_match_clients + dns_bind_localnet_match_clients }}"
 
-
-dns_bind_local_view_match_clients:
-  - localhost
-  - 127.0.0.1
-  - ::1
-  - "{{ ansible_default_ipv4['address'] }}"
-  - "{{ ansible_default_ipv4['network'] }}/{{ ansible_default_ipv4['prefix'] }}"
-  - "{{ ansible_default_ipv6['address'] | default('') }}"
 dns_bind_local_view_zones:
   - name: "{{ dns_bind_local_zone_label }}"
     type: master
     allow_update_keys:
       - "{{ dns_bind_local_key.name }}"
+    ns4:
+      - "{{ dns_bind_local_host4 }}"
+    ns6:
+      - "{{ dns_bind_local_host6 }}"
 
 dns_bind_views:
   - label: "{{ dns_bind_local_view_label }}"
@@ -215,7 +227,7 @@ dns_bind_views:
     zones_rfc1918: no
     zones: "{{ dns_bind_local_view_zones }}"
 
-dns_bind_all_views: "{{ dns_bind_views + [ dns_bind_view_default ] }}"
+dns_bind_all_views: "{{ dns_bind_views + [ dns_bind_default_view ] }}"
 
 
 dns_bind_db_default_ttl: 86400   # 1 day

@@ -12,4 +12,9 @@ $TTL {{ dns_bind_db_default_ttl }}
 @   IN  NS  ns1.{{ t_dns_bind_view_zone_qualified }}
 
 ; A Record (IPv4)
-ns1 IN  A   {{ ansible_default_ipv4['address'] }}
+{% for ns in (zone.ns4 | default([]) | select('truthy')) %}
+ns1 IN  A   {{ ns }}
+{% endfor %}
+{% for ns in (zone.ns6 | default([]) | select('truthy')) %}
+ns1 IN  AAAA  {{ ns }}
+{% endfor %}
