@@ -3,7 +3,6 @@
 - name: zone filepath
   set_fact:
     t_dns_bind_view_zone_filepath: "{{ zone['file'] | d( dns_bind_conf_dir + '/' + zone['type'] + '/' + 'db.' + view_label + '.' + zone['name'] ) }}"
-    t_dns_bind_view_zone_qualified: "{{ zone['name'] + ('.' if not zone['name'].endswith('.') else '') }}"
 
 - name: stat zone
   stat:

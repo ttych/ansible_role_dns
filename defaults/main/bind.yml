@@ -213,10 +213,13 @@ dns_bind_local_view_zones:
     type: master
     allow_update_keys:
       - "{{ dns_bind_local_key.name }}"
-    ns4:
-      - "{{ dns_bind_local_host4 }}"
-    ns6:
-      - "{{ dns_bind_local_host6 }}"
+    mail: "{{ dns_bind_db_default_mail_user }}.{{ dns_bind_local_zone_label }}."
+    nameservers:
+      - "{{ dns_bind_db_default_primary_ns_name }}.{{ dns_bind_local_zone_label }}."
+    records:
+      - name: "{{ dns_bind_db_default_primary_ns_name }}"
+        type: A
+        data: "{{ dns_bind_local_host4 }}"
 
 dns_bind_views:
   - label: "{{ dns_bind_local_view_label }}"
@@ -231,6 +234,9 @@ dns_bind_all_views: "{{ dns_bind_views + [ dns_bind_default_view ] }}"
 
 
 dns_bind_db_default_ttl: 86400   # 1 day
+dns_bind_db_default_zone_class: IN
+dns_bind_db_default_mail_user: admin
+dns_bind_db_default_primary_ns_name: ns1
 # dns_bind_db_defaut_serial_number: "{{ ansible_date_time.date | regex_replace('-', '') + '01' }}"
 dns_bind_db_defaut_serial_number: 1
 dns_bind_db_default_refresh: 3600   # 1 hour
