@@ -1,2 +1,8 @@
 ---
-# handlers file for ansible_role_dns
+
+- name: systemd restart bind
+  service:
+    name: "{{ dns_bind_service }}"
+    state: restarted
+  when: not t_dns_bind_service_start.changed
+  register: t_dns_bind_service_restart

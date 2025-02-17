@@ -11,7 +11,7 @@
     name: "{{ dns_bind_packages }}"
     state: present
   register: t_dns_bind_install
-
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: bind dirs
   file:
@@ -51,7 +51,7 @@
     - name: db.255
     - name: db.127
   register: t_dns_bind_default_db
-
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: deploy named.root from internet
   get_url:
@@ -62,6 +62,7 @@
     group: "{{ root_group }}"
   failed_when: false
   register: t_dns_bind_named_root_internet
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: deploy named.root from backup
   template:
@@ -72,6 +73,7 @@
     mode: "0644"
   when: t_dns_bind_named_root_internet.failed or ((t_dns_bind_named_root_internet.status_code|d(200)) != 200)
   register: t_dns_bind_named_root_copy
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: deploy bind.keys from internet
   get_url:
@@ -82,6 +84,7 @@
     mode: '0644'
   failed_when: false
   register: t_dns_bind_keys_internet
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: deploy bind.keys from backup
   template:
@@ -92,6 +95,7 @@
     mode: "0644"
   when: t_dns_bind_keys_internet.failed or ((t_dns_bind_keys_internet.status_code|d(200)) != 200)
   register: t_dns_bind_keys_copy
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 
 - name: check rndc.key status
@@ -102,6 +106,7 @@
 - name: deploy rndc.key
   command: rndc-confgen -a -A hmac-sha512 -c "{{ dns_bind_rndc_key }}" -k "{{ dns_bind_rndc_conf_key_label }}"
   when: not t_dns_bind_rndc_key.stat.exists
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: fix rndc.key permission
   file:
@@ -109,6 +114,7 @@
     owner: root
     group: "{{ dns_bind_group }}"
     mode: "0640"
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - name: get rndc.key content
   command: cat "{{ dns_bind_rndc_key }}"
@@ -122,6 +128,7 @@
     owner: root
     group: "{{ dns_bind_group }}"
     mode: "0640"
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 
 - include_tasks: bind_key.yml
@@ -153,6 +160,7 @@
       dest: "{{ dns_bind_named_conf_keys }}"
       mode: '0640'
   register: t_dns_bind_confs
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 
 - name: stat named.conf.local
@@ -169,6 +177,7 @@
     mode: "{{ item.mode | d('0640') }}"
   when: not t_dns_bind_named_conf_local.stat.exists
   register: t_dns_bind_conf_local
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 
 - name: deploy bind view
@@ -182,6 +191,7 @@
   loop_control:
     loop_var: view
   register: t_dns_bind_views
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 - include_tasks: bind_view_zone.yml
   loop: "{{ dns_bind_default_view_zones }}"
@@ -191,6 +201,7 @@
     zone: "{{ item }}"
     view_label: "{{ dns_bind_default_view_label }}"
   register: t_dns_bind_view_zones_default
+
 
 - include_tasks: bind_view_zone.yml
   loop: "{{ dns_bind_local_view_zones }}"
@@ -243,15 +254,6 @@
         name: "{{ dns_bind_service }}"
         state: started
       register: t_dns_bind_service_start
-
-    - name: "restart {{ dns_bind_service }} service on change"
-      service:
-        name: "{{ dns_bind_service }}"
-        state: restarted
-      when:
-        - not t_dns_bind_service_start.changed
-        - t_dns_bind_install.changed or t_dns_bind_service_deploy.changed or t_dns_bind_views.changed or t_dns_bind_confs.changed or t_dns_bind_keys_copy.changed or t_dns_bind_keys_internet.changed or t_dns_bind_default_db.changed or t_dns_bind_named_root_internet.changed or t_dns_bind_named_root_copy.changed or t_dns_bind_view_zones_default.changed or t_dns_bind_view_zones_local.changed or t_dns_bind_conf_local.changed or t_bind_key_update or t_apparmor_update
-      register: t_dns_bind_service_restart
 
   when: dns_bind_service_type == 'systemd'
 

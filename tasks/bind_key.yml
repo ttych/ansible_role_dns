@@ -19,6 +19,7 @@
         group: "{{ bind_key_group | d(root_group) }}"
         mode: "{{ bind_key_mode | d('0640') }}"
       register: t_dns_bind_key_deploy
+      notify: "{{ dns_bind_service_type }} restart bind"
 
   when: bind_key.secret is defined and bind_key.secret
 
@@ -35,6 +36,7 @@
         cmd: "tsig-keygen -a {{ bind_key.algorithm | default(dns_bind_key_algorithm) }} \"{{ bind_key.name }}\" > \"{{ bind_key_dir }}/{{ bind_key.name }}\""
       when: not t_dns_bind_key_stat.stat.exists
       register: t_dns_bind_key_create
+      notify: "{{ dns_bind_service_type }} restart bind"
 
     - name: key permission
       file:

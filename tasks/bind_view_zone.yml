@@ -17,6 +17,7 @@
     group: "{{ item.group | d(dns_bind_group) }}"
     mode: "{{ item.mode | d('0644') }}"
   when: not t_dns_bind_view_zone_stat.stat.exists
+  notify: "{{ dns_bind_service_type }} restart bind"
 
 
 - name: check zone
