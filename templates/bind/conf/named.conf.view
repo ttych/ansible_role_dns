@@ -22,4 +22,7 @@ view "{{ view['label'] }}" {
 {% endif %}
     };
 {% endfor %}
+
+    include "{{ dns_bind_named_conf }}.view.{{ view['label'] }}.local";
+
 };

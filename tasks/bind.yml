@@ -180,37 +180,13 @@
   notify: "{{ dns_bind_service_type }} restart bind"
 
 
-- name: deploy bind view
-  template:
-    src: "bind/conf/named.conf.view"
-    dest: "{{ dns_bind_named_conf }}.view.{{ view['label'] }}"
-    owner: "{{ item.owner | d('root') }}"
-    group: "{{ item.group | d(dns_bind_group) }}"
-    mode: "{{ item.mode | d('0640') }}"
+- include_tasks: bind_view.yml
   loop: "{{ dns_bind_all_views }}"
   loop_control:
-    loop_var: view
-  register: t_dns_bind_views
-  notify: "{{ dns_bind_service_type }} restart bind"
-
-- include_tasks: bind_view_zone.yml
-  loop: "{{ dns_bind_default_view_zones }}"
-  loop_control:
-    loop_var: item
+    loop_var: item_view
   vars:
-    zone: "{{ item }}"
-    view_label: "{{ dns_bind_default_view_label }}"
-  register: t_dns_bind_view_zones_default
+    view: "{{ item_view }}"
 
-
-- include_tasks: bind_view_zone.yml
-  loop: "{{ dns_bind_local_view_zones }}"
-  loop_control:
-    loop_var: item
-  vars:
-    zone: "{{ item }}"
-    view_label: "{{ dns_bind_local_view_label }}"
-  register: t_dns_bind_view_zones_local
 
 
 - name: check named.conf

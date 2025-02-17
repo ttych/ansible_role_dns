@@ -1,0 +1,37 @@
+---
+
+- name: deploy bind view
+  template:
+    src: "bind/conf/named.conf.view"
+    dest: "{{ dns_bind_named_conf }}.view.{{ view.label }}"
+    owner: "{{ view.owner | d('root') }}"
+    group: "{{ view.group | d(dns_bind_group) }}"
+    mode: "{{ view.mode | d('0640') }}"
+  register: t_dns_bind_view
+  notify: "{{ dns_bind_service_type }} restart bind"
+
+
+- name: state bind view local
+  stat:
+    path: "{{ dns_bind_named_conf }}.view.{{ view.label }}.local"
+  register: t_dns_bind_view_local_stat
+
+- name: init bind view local
+  template:
+    src: "bind/conf/named.conf.view.local"
+    dest: "{{ dns_bind_named_conf }}.view.{{ view.label }}.local"
+    owner: "{{ view.owner | d('root') }}"
+    group: "{{ view.group | d(dns_bind_group) }}"
+    mode: "{{ view.mode | d('0640') }}"
+  register: t_dns_bind_view_local
+  when: not t_dns_bind_view_local_stat.stat.exists
+  notify: "{{ dns_bind_service_type }} restart bind"
+
+
+- include_tasks: bind_view_zone.yml
+  loop: "{{ view.zones }}"
+  loop_control:
+    loop_var: item_zone
+  vars:
+    zone: "{{ item_zone }}"
+    view_label: "{{ view.label }}"
