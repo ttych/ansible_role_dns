@@ -6,6 +6,9 @@
         msg: "apparmor profile name is not set !"
       when: _apparmor_profile_name is not defined
 
+    # - ansible.builtin.debug:
+    #     msg: "_apparmor_profile_name: {{ _apparmor_profile_name }}"
+
 
     - block:
 
@@ -13,8 +16,8 @@
           ansible.builtin.lineinfile:
             path: "{{ apparmor_d }}/{{ _apparmor_profile_name }}"
             state: present
-            regexp: '^\s*#include <local/usr.sbin.named>\s*$'
-            line: '  #include <local/usr.sbin.named>'
+            regexp: '^\s*#include <local/{{ _apparmor_profile_name }}>\s*$'
+            line: '  #include <local/{{ _apparmor_profile_name }}>'
             insertbefore: '^\s*}\s*$'
           register: t_apparmor_profile_include
 
