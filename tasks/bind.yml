@@ -36,7 +36,6 @@
       mode: "2775"
 
 
-
 - name: deploy default db
   template:
     src: "bind/db/{{ item.name }}"
@@ -204,7 +203,6 @@
   vars:
     _apparmor_profile_name: usr.sbin.named
     _apparmor_local_profile: bind/apparmor/usr.sbin.named
-  register: t_dns_bind_apparmor
 
 
 - block:
