@@ -1,9 +1,9 @@
 ---
 
-- include_tasks: accounts.yml
+- include_tasks: _accounts.yml
   vars:
-    accounts_groups: "{{ dns_bind_groups }}"
-    accounts_users: "{{ dns_bind_users }}"
+    _accounts_groups: "{{ dns_bind_groups }}"
+    _accounts_users: "{{ dns_bind_users }}"
 
 
 - name: install bind
